@@ -6,8 +6,8 @@ import pickle
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
-K = 64
-KEY_SIZE = 512
+K = 4
+KEY_SIZE = 16
 NUM_QUBITS = KEY_SIZE*K
 ERROR_RATE = 0
 
