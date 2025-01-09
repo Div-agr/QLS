@@ -8,7 +8,9 @@ import random
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 
-NUM_QUBITS = 96
+K = 64
+KEY_SIZE = 512
+NUM_QUBITS = KEY_SIZE*K
 
 
 def select_random_indices(arr: list) -> list:
@@ -141,8 +143,9 @@ def four_fold_key(key: list) -> list:
             val ^= key[j]
         arr.append(val)
 
-    lenmissin = 16 - len(arr)
+    lenmissin = KEY_SIZE - len(arr)
     arr += lenmissin*[0]
+    # print(arr, len(arr) )
     return arr
 
 
@@ -153,6 +156,7 @@ class QLS_Client:
         Initializes a QLS Client instance.
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 
     def send_data(self, host, port):
         """
@@ -166,12 +170,32 @@ class QLS_Client:
         self.socket.send(b"senddata")
 
         data = input("> ")
-
         # Encrypt the input data using AES encryption with the cipher1 object
         ct_bytes = self.cipher1.encrypt(
             pad(data.encode('utf-8'), AES.block_size))
 
         print("CT Text: ", ct_bytes)
+        send_stream(self.socket, ct_bytes)
+        self.socket.close()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    def send_given_data(self, host, port):
+        """
+        Sends data over a connection.
+
+        Parameters:
+            host (str): The host address.
+            port (int): The port number.
+        """
+        self.socket.connect((host, port))
+        self.socket.send(b"senddata")
+
+        data = "no world"
+
+        # Encrypt the input data using AES encryption with the cipher1 object
+        ct_bytes = self.cipher1.encrypt(
+            pad(data.encode('utf-8'), AES.block_size))
+
         send_stream(self.socket, ct_bytes)
         self.socket.close()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -248,6 +272,7 @@ class QLS_Client:
             if response == "validdone":
                 # Perform 4-fold key compression
                 bob_key = four_fold_key(bob_key)
+                
                 self.secret_key = bob_key
                 break
             else:

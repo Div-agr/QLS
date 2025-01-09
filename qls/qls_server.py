@@ -6,7 +6,10 @@ import pickle
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
-NUM_QUBITS = 96
+K = 64
+KEY_SIZE = 512
+NUM_QUBITS = KEY_SIZE*K
+ERROR_RATE = 0
 
 
 def generate_bits(n: int) -> np.ndarray:
@@ -41,7 +44,7 @@ def four_fold_key(key: list) -> list:
             val ^= key[j]
         arr.append(val)
 
-    lenmissin = 16 - len(arr)
+    lenmissin = KEY_SIZE - len(arr)
     arr += lenmissin*[0]
     return arr
 
@@ -182,6 +185,7 @@ class QLS_Server:
             Initializes a QLS Server instance.
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     def bind(self, host, port) -> None:
         """
@@ -242,7 +246,7 @@ class QLS_Server:
 
         # Simulate noise in the quantum channel
         secret_sent_message = simulate_quantum_channel(
-            secret_quantum_encoded, 0.01)
+            secret_quantum_encoded, ERROR_RATE)
 
         with conn:
             # Send the secret message via the quantum channel
