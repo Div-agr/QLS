@@ -5,8 +5,6 @@
 
 <h2> Modified TLS protocol using BB84 protocol and Bit Masking </h1>
 
-<h4> Sanjai Kumar Mani, Rithvik Ravilla, and Rajeswari Sridhar* </h3>
-
 </samp>   
 
 ---
